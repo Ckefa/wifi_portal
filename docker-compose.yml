@@ -5,7 +5,7 @@ services:
     image: captive_portal_image
     container_name: cpi0
     volumes:
-    - /var/logs/cp/:/var/log
+    - /var/log/cp/:/var/log
     - /apps/wifi_portal/data:/apps/wifi_portal/data
     ports:
       - "8002:8001"
