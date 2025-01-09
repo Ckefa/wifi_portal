@@ -1,12 +1,12 @@
 FROM python:3.13-slim
 
-COPY . /apps/captive_portal/
+COPY . /apps/wifi_portal/
 
-WORKDIR /apps/captive_portal/
+WORKDIR /apps/wifi_portal/
 
 RUN apt-get update && apt-get upgrade
 
-RUN python3 -m pip install --no-cache-dir --upgrade pip 
+RUN python3 -m pip install --no-cache-dir --upgrade pip
 
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
