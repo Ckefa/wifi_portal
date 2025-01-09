@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GARDNADZ ENT MOVIES SHOP</title>
+    </head>
+
+<body>
+        <button onclick="getItems()">
+            Get Item
+        </button>
+    <button onclick="getItems2()">
+            Get Item
+        </button>
+
+
+</body>
+
+<script>
+
+    function getItems(){
+        fetch("https://ckefa.com:8000/check?phone=0741233687&tok=b847898a")
+            .then(data=>console.log(data.json()))
+    }
+function getItems2(){
+        fetch("https://ckefa.com:8000/confirm?phone=0741233687&amount=20")
+            .then(data=>console.log(data.json()))
+    }
+    </script>
+
+</html>
