@@ -1,16 +1,16 @@
-from dotenv import load_dotenv
 import os
-
-
-import requests
+import requests 
 import json
 
 
-load_dotenv()
-consumer_key = os.getenv("CONSUMER_KEY")
-consumer_secret = os.getenv("CONSUMER_SECRET")
+consumer_key = os.getenv("CONSUMER_KEY", "").strip()
+consumer_secret = os.getenv("CONSUMER_SECRET", "").strip()
+base_url = os.getenv("BASE_URL", "").strip()
 
-base_url = "https://pay.pesapal.com/v3"
+# Validate Environment Variables
+if not all((consumer_key, consumer_secret,base_url)):
+    raise Exception("Missing Environment Variable")
+
 print(f"Consumer key {consumer_key}\n", f"consoumer secret {consumer_secret}")
 
 

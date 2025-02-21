@@ -1,3 +1,5 @@
+all: build deploy
+
 build:
 	@docker build -f dockerfile -t wifi_portal_image ..;
 

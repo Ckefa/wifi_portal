@@ -3,15 +3,19 @@
 import os
 import time
 import logging
-from dotenv import load_dotenv
 import k2connect
 
 
 # Load environment variables
-load_dotenv()
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SECRET")
-base_url = os.getenv("BASE_URL")
+client_id = os.getenv("CLIENT_ID", "").strip()
+client_secret = os.getenv("CLIENT_SECRET", "").strip()
+base_url = os.getenv("KOPOKOPO_API", "").strip()
+
+if not all((client_id, client_secret, base_url)):
+    print(f"Env client_id: {client_id}, client_secret{client_secret}, base_url{base_url}")
+    raise Exception("Missing environment Variable")
+else:
+    print(f"Env client_id: {client_id}, client_secret{client_secret}, base_url{base_url}")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
