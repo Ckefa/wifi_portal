@@ -50,8 +50,16 @@ def remove_expired_user(phone, expiry):
     if sleep_time > 0:
         sleep(sleep_time)
     # Remove the user from the in-memory dictionary
-    users.pop(phone, None)
-    print(f"Removed expired Subscription {phone}")
+    try:
+        with SessionLocal() as db_session:
+            user, _ = User.get_or_create(phone, db_session)
+            user.status = "expired"
+            user.save()
+
+        users.pop(phone, None)
+        print(f"Removed expired Subscription {phone}")
+    except Exception as e:
+        raise e
 
 
 @app.route("/")
@@ -166,6 +174,8 @@ def confirm_purchase():
         user.expiry = expiry_datetime
         user.package = package.name
         user.amount = package.price
+        user.status = "active"
+        user.total += package.price
         print(f"Updated user package price {user.amount}, {user.package}")
         user.save(db_session)
 

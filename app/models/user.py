@@ -13,9 +13,11 @@ class User(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     phone = Column(String(30), unique=True, nullable=False)
+    package = Column(String(30))
     amount = Column(Float, default=0.00)
-    package = Column(String(50))
+    status = Column(String(10), default="expired")
     expiry = Column(DATETIME, default=datetime.now)
+    total = Column(Float, default=0.00)
 
     def __init__(self, phone, package=None):
         self.phone = phone
