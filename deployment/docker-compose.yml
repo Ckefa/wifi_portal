@@ -9,7 +9,6 @@ services:
     environment:
       # Kopo Kopo Keys
       - KOPOKOPO_API=https://api.kopokopo.com/
-      - BASE_URL=https://pay.pesapal.com/v3
       - CLIENT_ID=MFH-VpZeD7iKjH0XsDPL5yAYb6ASszoYW8t6Xr8R8AA
       - CLIENT_SECRET=hJbYJ3sUmIuMb1lDPKLg92h0UNrhIFsDGQmIOE8YfQc
       # Maria DB Variables
