@@ -200,7 +200,7 @@ def check_phone():
         return jsonify({"msg": "Enter a valid phone number"})
 
     # Special cases for certain phone values
-    if phone == "anonymous1":
+    if phone == "0123456789":
         return jsonify({"phone": phone, "payment": True})
     elif phone == "tokcheck":
         devices = users.values()
