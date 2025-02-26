@@ -7,6 +7,7 @@ services:
     ports:
       - "8002:8001"
     environment:
+      - TZ=Africa/Nairobi  # Set Nairobi timezone explicitly
       # Kopo Kopo Keys
       - KOPOKOPO_API=https://api.kopokopo.com/
       - CLIENT_ID=MFH-VpZeD7iKjH0XsDPL5yAYb6ASszoYW8t6Xr8R8AA
@@ -27,6 +28,7 @@ services:
     volumes:
       - wifi-portal-volume:/var/lib/mysql
     environment:
+      - TZ=Africa/Nairobi  # Set Nairobi timezone explicitly
       - MARIADB_USER=admin
       - MARIADB_PASSWORD=Admin1234
       - MARIADB_ROOT_PASSWORD=root

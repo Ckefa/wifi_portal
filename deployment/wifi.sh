@@ -28,50 +28,55 @@ case "$command" in
         # Display the users table
         mariadb -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} -e "SELECT * FROM ${DB_NAME}.users;"
         ;;
-    -add)
-        # Ensure phone, hours, and amount arguments are provided
-        if [ "$#" -ne 4 ]; then
-            usage
-        fi
 
-        PHONE="$2"
-        HOUR="$3"
-        AMOUNT="$4"
+  -add)
+      # Ensure phone, hours, and amount arguments are provided
+      if [ "$#" -ne 4 ]; then
+          usage
+      fi
 
-        # Validate that HOURS is a positive integer
-        if ! [[ "$HOUR" =~ ^[1-9][0-9]*$ ]]; then
-            echo "Error: HOURS must be a positive integer."
-            exit 1
-        fi
+      PHONE="$2"
+      HOUR="$3"
+      AMOUNT="$4"
 
-        # SQL statement to insert or update user
-        SQL="INSERT INTO ${DB_NAME}.users (id, phone, package, amount, status, expiry, total)
-        VALUES (UUID(), '${PHONE}', '${HOUR} Hour Package', ${AMOUNT}, 'active', DATE_ADD(NOW(), INTERVAL ${HOUR} HOUR), ${AMOUNT})
-        ON DUPLICATE KEY UPDATE 
-            expiry = DATE_ADD(expiry, INTERVAL ${HOUR} HOUR),
-            package = '${HOUR} Hour Package',
-            amount = ${AMOUNT},
-            status = 'active',
-            total = total + ${AMOUNT};"
+      # Validate that HOURS is a positive integer
+      if ! [[ "$HOUR" =~ ^[1-9][0-9]*$ ]]; then
+          echo "Error: HOURS must be a positive integer."
+          exit 1
+      fi
 
-        mariadb -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} -e "${SQL}"
-        if [ $? -eq 0 ]; then
-            echo "User with phone ${PHONE} added/updated successfully with ${HOUR} hour(s)."
-        else
-            echo "Failed to add/update user with phone ${PHONE}."
-        fi
-        ;;
+      # SQL statement to set timezone and insert/update user
+      SQL="SET time_zone = 'Africa/Nairobi';
+      INSERT INTO ${DB_NAME}.users (id, phone, package, amount, status, expiry, total)
+      VALUES (UUID(), '${PHONE}', '${HOUR} Hour Package', ${AMOUNT}, 'active', 
+              DATE_ADD(CONVERT_TZ(NOW(), @@session.time_zone, 'Africa/Nairobi'), INTERVAL ${HOUR} HOUR), ${AMOUNT})
+      ON DUPLICATE KEY UPDATE
+          expiry = DATE_ADD(expiry, INTERVAL ${HOUR} HOUR),
+          package = '${HOUR} Hour Package',
+          amount = ${AMOUNT},
+          status = 'active',
+          total = total + ${AMOUNT};"
 
-       -get)
-        # Ensure phone argument is provided
-        if [ "$#" -ne 2 ]; then
-            usage
-        fi
-        PHONE="$2"
-        # Build SQL to retrieve user details
-        SQL="SELECT * FROM ${DB_NAME}.users WHERE phone = '${PHONE}';"
-        mariadb -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} -e "${SQL}"
-        ;;
+      # Execute SQL command
+      mariadb -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} -e "${SQL}"
+      
+      if [ $? -eq 0 ]; then
+          echo "User with phone ${PHONE} added/updated successfully with ${HOUR} hour(s)."
+      else
+          echo "Failed to add/update user with phone ${PHONE}."
+      fi
+      ;;
+
+  -get)
+      # Ensure phone argument is provided
+      if [ "$#" -ne 2 ]; then
+          usage
+      fi
+      PHONE="$2"
+      # Build SQL to retrieve user details
+      SQL="SELECT * FROM ${DB_NAME}.users WHERE phone = '${PHONE}';"
+      mariadb -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} -e "${SQL}"
+      ;;
 
   -total)
         # SQL to sum the total column

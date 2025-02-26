@@ -54,12 +54,13 @@ def remove_expired_user(phone, expiry):
         with SessionLocal() as db_session:
             user, _ = User.get_or_create(phone, db_session)
             user.status = "expired"
-            user.save()
-
-        users.pop(phone, None)
-        print(f"Removed expired Subscription {phone}")
+            user.save(db_session)
     except Exception as e:
         raise e
+    finally:
+        users.pop(phone, None)
+        print(f"Removed expired Subscription {phone}")
+
 
 
 @app.route("/")
@@ -200,7 +201,7 @@ def check_phone():
         return jsonify({"msg": "Enter a valid phone number"})
 
     # Special cases for certain phone values
-    if phone == "0123456789":
+    if phone == "1122334455":
         return jsonify({"phone": phone, "payment": True})
     elif phone == "tokcheck":
         devices = users.values()
