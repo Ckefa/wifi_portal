@@ -8,12 +8,12 @@ DB_NAME="wifi"
 
 usage() {
     echo "Usage:"
-    echo "  $0 -table            => Get all Users details"
-    echo "  $0 -update           => Updates Users table expiry for manually added users"
-    echo "  $0 -total            => Gets Total wifi revenue"
-    echo "  $0 -add PHONE HOURS  => Manully add user to table"
-    echo "  $0 -get PHONE        => Get user details by phone"
-    echo "  $0 -delete PHONE     => Delete User by phone"
+    echo "  $0 -table                  => Get all Users details"
+    echo "  $0 -update                 => Updates Users table expiry for manually added users"
+    echo "  $0 -total                  => Gets Total wifi revenue"
+    echo "  $0 -add PHONE HOURS AMOUNT => Manully add user to table"
+    echo "  $0 -get PHONE              => Get user details by phone"
+    echo "  $0 -delete PHONE           => Delete User by phone"
     exit 1
 }
 
@@ -85,7 +85,7 @@ case "$command" in
         fi
         ;;
 
- -update)
+  -update)
         # SQL to update users whose expiry has passed
         SQL="UPDATE ${DB_NAME}.users
              SET status = 'expired'
@@ -97,8 +97,18 @@ case "$command" in
         else
             echo "Failed to update expired users."
         fi
-        ;;
 
+        # SQL to delete users where package is NULL
+        SQL="DELETE FROM ${DB_NAME}.users WHERE package IS NULL;"
+
+        mariadb -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} -e "${SQL}"
+        if [ $? -eq 0 ]; then
+            echo "Users with NULL package deleted successfully."
+        else
+            echo "Failed to delete users with NULL package."
+        fi
+        ;;
+ 
     -delete)
         # Ensure phone argument is provided
         if [ "$#" -ne 2 ]; then
