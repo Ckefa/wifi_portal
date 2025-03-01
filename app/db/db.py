@@ -1,8 +1,10 @@
-from logging import log
 import os
 from sqlalchemy import create_engine 
 from sqlalchemy.orm import  sessionmaker, declarative_base
 
+from log.logger import getLogger
+
+log = getLogger(__name__)
 
 # Read database uri from env
 dbhost = os.getenv("MARIADB_HOST")
@@ -11,15 +13,19 @@ dbpasswd = os.getenv("MARIADB_PASSWORD")
 dbname = os.getenv("MARIADB_DATABASE")
 
 if not dbhost:
+    log.exception("dbhost not set")
     raise Exception("dbhost not set")
 
 if not dbuser:
+    log.exception("dbuser not set")
     raise Exception("dbuser not set")
 
 if not dbpasswd:
+    log.exception("dbpasswd not set")
     raise Exception("dbpasswd not set")
 
 if not dbname:
+    log.exception("dbname not set")
     raise Exception("dbname not set")
 
 dbhost = dbhost.strip()
@@ -38,4 +44,4 @@ SessionLocal = sessionmaker(bind=engine)
 # Create All Tables above
 def create_tables():
     Base.metadata.create_all(bind=engine)
-    print("All Tables created successfully")
+    log.info("All Tables created successfully")

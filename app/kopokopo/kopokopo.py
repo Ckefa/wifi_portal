@@ -2,8 +2,11 @@
 
 import os
 import time
-import logging
 import k2connect
+
+from log.logger import getLogger
+
+log = getLogger(__name__)
 
 
 # Load environment variables
@@ -12,14 +15,11 @@ client_secret = os.getenv("CLIENT_SECRET", "").strip()
 base_url = os.getenv("KOPOKOPO_API", "").strip()
 
 if not all((client_id, client_secret, base_url)):
-    print(f"Env client_id: {client_id}, client_secret{client_secret}, base_url{base_url}")
+    log.info(f"Env client_id: {client_id}, client_secret{client_secret}, base_url{base_url}")
+    log.exception("Missing environment Variable")
     raise Exception("Missing environment Variable")
 else:
-    print(f"Env client_id: {client_id}, client_secret{client_secret}, base_url{base_url}")
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+    log.debug(f"Env variable success client_id: {client_id}, client_secret{client_secret}, base_url{base_url}")
 
 
 class KopoKopo:
@@ -39,7 +39,7 @@ class KopoKopo:
         """
         # If the access token exists and is still valid, skip fetching a new one
         if cls.access_token and not cls.is_token_expired():
-            logger.info("Access token is valid, skipping refresh.")
+            log.info("Access token is valid, skipping refresh.")
             return
 
         try:
@@ -55,12 +55,12 @@ class KopoKopo:
             cls.expires_in = (
                 access_token.get("expires_in") + time.time()
             )  # Expiration time in seconds
-            logger.info(
+            log.info(
                 f"New access token acquired: {cls.access_token}, expires in {cls.expires_in - time.time()} seconds."
             )
 
         except Exception as e:
-            logger.error(f"Error acquiring access token: {e}")
+            log.error(f"Error acquiring access token: {e}")
             raise
 
     @classmethod
@@ -79,7 +79,7 @@ class KopoKopo:
             cls.access_token, mpesa_payment_location
         )
 
-        logger.info(f"Mpesa Payment Status: {payment_request_status}")
+        log.debug(f"Mpesa Payment Status: {payment_request_status}")
         return payment_request_status
 
     def stk_push(self, amount, phone, fname, lname):
@@ -89,7 +89,7 @@ class KopoKopo:
         # Ensure phone number format (strip leading zero if exists)
         phone = phone[1:] if phone.startswith("0") else phone
         phone = f"+254{phone}"
-        print("Stk Push to: ", phone)
+        log.debug("Stk Push to: ", phone)
 
         try:
             # Create an instance of the Receive Payments service
@@ -117,7 +117,7 @@ class KopoKopo:
             return mpesa_payment_location
 
         except Exception as e:
-            logger.error(f"Error during STK push: {e}")
+            log.error(f"Error during STK push: {e}")
             raise
 
     def request_payment(self, amount, phone, fname, lname, device_id):
@@ -129,9 +129,9 @@ class KopoKopo:
         try:
             # Make the payment request
             new_order = self.stk_push(amount, phone, fname, lname)
-            logger.info(f"New payment order created: {new_order}")
+            log.info(f"New payment order created: {new_order}")
             return new_order
 
         except Exception as e:
-            logger.error(f"Error during payment request: {e}")
+            log.error(f"Error during payment request: {e}")
             raise

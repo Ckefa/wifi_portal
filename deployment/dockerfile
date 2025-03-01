@@ -14,4 +14,4 @@ COPY ./app /app
 
 EXPOSE 8001
 
-CMD [ "sh", "-c", "python3 main.py >> /var/log/wifi_portal.log 2>&1" ]
+CMD [ "sh", "-c", "gunicorn -b 0.0.0.0:8001 wsgi:app" ]

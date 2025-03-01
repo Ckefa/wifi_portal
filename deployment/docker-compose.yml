@@ -3,7 +3,7 @@ services:
     image: wifi_portal_image
     container_name: portal1
     volumes:
-      - /var/log/wifi/:/var/log
+      - /var/log/wifi/:/app/log/logs
     ports:
       - "8002:8001"
     environment:

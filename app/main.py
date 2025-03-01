@@ -20,6 +20,11 @@ from models.packages import PackageCatalog  # Package model
 from models.user import User  # Improved User model
 from db.db import SessionLocal, create_tables  # DB session and table creation
 
+from log.logger import getLogger
+
+# get Logger
+log = getLogger(__name__)
+
 # Create the tables upon application start
 create_tables()
 
@@ -42,13 +47,11 @@ users = dict()
 payments = dict()
 
 
-def remove_expired_user(phone, expiry):
+def remove_expired_user(phone):
     """Remove expired user after the specified expiration time."""
     # Calculate the time remaining until expiry
-    sleep_time = (expiry - datetime.now()).total_seconds()
-    print(f"Subscription {phone} Expires in {sleep_time} Seconds")
-    if sleep_time > 0:
-        sleep(sleep_time)
+    print(f"Subscription {phone} Cached for an hour")
+    sleep(3600)
     # Remove the user from the in-memory dictionary
     try:
         with SessionLocal() as db_session:
@@ -56,10 +59,11 @@ def remove_expired_user(phone, expiry):
             user.status = "expired"
             user.save(db_session)
     except Exception as e:
+        log.exception(e)
         raise e
     finally:
         users.pop(phone, None)
-        print(f"Removed expired Subscription {phone}")
+        log.info(f"Removed expired Subscription {phone}")
 
 
 
@@ -83,10 +87,10 @@ def home():
     if not device_id:
         new_device = str(uuid4())
         expiry = datetime.now() + timedelta(days=3)
-        print(f"<<<<<<<< New Device {new_device} {tok} expiry = {expiry} >>>>>>>")
+        log.debug(f"<<<<<<<< New Device {new_device} {tok} expiry = {expiry} >>>>>>>")
         response.set_cookie("device_id", new_device, expires=expiry)
     else:
-        print(f"<<<<<<<< Existing Device {device_id} {tok} >>>>>>>")
+        log.debug(f"<<<<<<<< Existing Device {device_id} {tok} >>>>>>>")
 
     return response
 
@@ -112,7 +116,7 @@ def pay():
 
     # Validate token and phone presence
     if not tok or not phone:
-        print("Invalid Token or Phone")
+        log.info("Invalid Token or Phone")
         return redirect("/")
 
     print(f"Purchasing {package}, {phone}, {price}")
@@ -129,7 +133,7 @@ def pay():
 def get_phone():
     """Route to get phone number stored in the session."""
     phone = session.get("phone")
-    print("[[ Getting phone:", phone)
+    log.debug("[[ Getting phone:", phone)
     return jsonify({"phone": phone})
 
 
@@ -152,12 +156,15 @@ def confirm_purchase():
         )
 
         if transaction_status == "Failed":
-            print(f"Transacrion Failed for phone {phone}")
+            log.info(f"Transacrion Failed for phone {phone}")
             return jsonify({"msg": "Transaction Failded"})
 
         users[phone] = device_id
+        # Start a thread to remove the user from the in-memory dict after expiry
+        thread = Thread(target=remove_expired_user, args=[phone])
+        thread.start()
     else:
-        print("Payment Locaton Not Availabe")
+        log.error("Payment Locaton Not Availabe")
         return
 
     # Retrieve package details and calculate expiry date
@@ -177,15 +184,8 @@ def confirm_purchase():
         user.amount = package.price
         user.status = "active"
         user.total += package.price
-        print(f"Updated user package price {user.amount}, {user.package}")
+        log.info(f"Updated user package price {user.amount}, {user.package}")
         user.save(db_session)
-
-    # Start a thread to remove the user from the in-memory dict after expiry
-    thread = Thread(target=remove_expired_user, args=[phone, expiry_datetime])
-    thread.start()
-
-    # add device id to active Users
-    users[phone] = device_id
 
     return "Payment Confirmed"
 
@@ -208,7 +208,7 @@ def check_phone():
         if device_id in devices:
             for p, dv in users.items():
                 if dv == device_id:
-                    print(f"Existing token phone match: {p}")
+                    log.debug(f"Existing token phone match: {p}")
                     # Retrieve user status from the DB using a different variable name
                     with SessionLocal() as db_session:
                         user, _ = User.get_or_create(p, db_session)
@@ -218,29 +218,34 @@ def check_phone():
             return jsonify({"phone": phone, "payment": False})
     elif phone in users:
         if users.get(phone) != device_id:
-            print(f"Different Device for phone {phone}: {users.get(phone)} vs {device_id}")
+            log.info(f"Different Device for phone {phone}: {users.get(phone)} vs {device_id}")
             return jsonify({"phone": phone, "payment": False})
         with SessionLocal() as db_session:
             # Use get_or_create to retrieve the user from the DB
             user, _ = User.get_or_create(phone, db_session)
             status = user.check_status()
             report = {"phone": phone, "payment": status}
-            print(f"Report existing user {report}")
+            log.debug(f"Report existing user {report}")
         return jsonify(report)
     else:
-        # First-time user: store phone-device relation in memory and create new user in DB
+        # First-time user: store phone-device relation in memory anser in DB
         session["phone"] = phone
         users[phone] = device_id
+
+        # Start a thread to remove the user from the in-memory dict after expiry
+        thread = Thread(target=remove_expired_user, args=[phone])
+        thread.start()
+    
         with SessionLocal() as db_session:
             user = User(phone)  # create a new User object
             # Save the new user in the DB
             user.save(db_session)
             status = user.check_status()
         report = {"phone": phone, "payment": status}
-        print("Reporting Status:", phone, tok, report)
+        log.info("Reporting Status:", phone, tok, report)
         return jsonify(report)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8001, debug=True)
+    app.run(host="0.0.0.0", port=8001, debug=False)
 
