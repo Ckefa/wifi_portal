@@ -89,7 +89,7 @@ class KopoKopo:
         # Ensure phone number format (strip leading zero if exists)
         phone = phone[1:] if phone.startswith("0") else phone
         phone = f"+254{phone}"
-        log.debug("Stk Push to: ", phone)
+        log.debug(f"Stk Push to: {phone}")
 
         try:
             # Create an instance of the Receive Payments service

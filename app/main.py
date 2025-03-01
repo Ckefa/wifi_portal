@@ -133,7 +133,7 @@ def pay():
 def get_phone():
     """Route to get phone number stored in the session."""
     phone = session.get("phone")
-    log.debug("[[ Getting phone:", phone)
+    log.debug(f"Getting phone: {phone}")
     return jsonify({"phone": phone})
 
 
@@ -242,7 +242,7 @@ def check_phone():
             user.save(db_session)
             status = user.check_status()
         report = {"phone": phone, "payment": status}
-        log.info("Reporting Status:", phone, tok, report)
+        log.info(f"Reporting Status: {phone} {tok} {report}")
         return jsonify(report)
 
 
