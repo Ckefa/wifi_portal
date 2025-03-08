@@ -51,13 +51,14 @@ def remove_expired_user(phone):
     """Remove expired user after the specified expiration time."""
     # Calculate the time remaining until expiry
     print(f"Subscription {phone} Cached for an hour")
-    sleep(3600)
+    sleep(1800)
     # Remove the user from the in-memory dictionary
     try:
         with SessionLocal() as db_session:
             user, _ = User.get_or_create(phone, db_session)
-            user.status = "expired"
-            user.save(db_session)
+            if user.expiry < datetime.now():
+                user.status = "expired"
+                user.save(db_session)
     except Exception as e:
         log.exception(e)
         raise e

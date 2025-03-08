@@ -1,15 +1,13 @@
-all: build deploy
+all: deploy
 
-build:
-	@docker build -f dockerfile -t wifi_portal_image ..;
+deploy:;
+	@docker compose down;
+	@docker compose up --build --remove-orphans -d mariadb;
+	@echo "Waiting for MariaDB to initialize...";
+	@sleep 30;
+	@echo "Starting  wifi_portal...";
+	@docker compose up --build --remove-orphans -d wifi ;
+	@echo "Starting nginx...";
+	@docker compose up --build --remove-orphans -d nginx;
 
-
-deploy:
-	@docker compose down
-	@docker compose up -d mariadb
-	@echo "Waiting for MariaDB to initialize..."
-	@sleep 10
-	@echo "Waiting additional 30 seconds before starting wifi_portal..."
-	@sleep 30
-	@docker compose up -d wifi-portal
-
+.PHONY: all deploy

@@ -14,4 +14,4 @@ COPY ./app /app
 
 EXPOSE 8001
 
-CMD [ "sh", "-c", "gunicorn -b 0.0.0.0:8001 wsgi:app" ]
+CMD [ "sh", "-c", "gunicorn -b 0.0.0.0:80 wsgi:app" ]
