@@ -51,7 +51,7 @@ def remove_expired_user(phone):
     """Remove expired user after the specified expiration time."""
     # Calculate the time remaining until expiry
     print(f"Subscription {phone} Cached for an hour")
-    sleep(1800)
+    sleep(14 * 3600)
     # Remove the user from the in-memory dictionary
     try:
         with SessionLocal() as db_session:
@@ -202,7 +202,7 @@ def check_phone():
         return jsonify({"msg": "Enter a valid phone number"})
 
     # Special cases for certain phone values
-    if phone == "1122334455":
+    if phone == "secured347":
         return jsonify({"phone": phone, "payment": True})
     elif phone == "tokcheck":
         devices = users.values()
