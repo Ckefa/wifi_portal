@@ -6,7 +6,7 @@ deploy:;
 	@echo "Waiting for MariaDB to initialize...";
 	@sleep 30;
 	@echo "Starting  wifi_portal...";
-	@docker compose up --build --remove-orphans -d wifi ;
+	@docker compose up --build --remove-orphans -d wifi;
 	@echo "Starting nginx...";
 	@docker compose up --build --remove-orphans -d nginx;
 
