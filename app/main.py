@@ -34,7 +34,8 @@ app = Flask(__name__)
 # Set a secure secret key for session management
 app.secret_key = "SECRET@2024"
 app.config["SESSION_COOKIE_NAME"] = "session"
-app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Controls cross-site cookie behavior
+# Controls cross-site cookie behavior
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # Enable CORS to allow requests from any origin
 CORS(app, origins="*")
@@ -51,7 +52,7 @@ def remove_expired_user(phone):
     """Remove expired user after the specified expiration time."""
     # Calculate the time remaining until expiry
     print(f"Subscription {phone} Cached for an hour")
-    sleep(14 * 3600)
+    sleep(1800)
     # Remove the user from the in-memory dictionary
     try:
         with SessionLocal() as db_session:
@@ -65,7 +66,6 @@ def remove_expired_user(phone):
     finally:
         users.pop(phone, None)
         log.info(f"Removed expired Subscription {phone}")
-
 
 
 @app.route("/")
@@ -88,7 +88,8 @@ def home():
     if not device_id:
         new_device = str(uuid4())
         expiry = datetime.now() + timedelta(days=3)
-        log.debug(f"<<<<<<<< New Device {new_device} {tok} expiry = {expiry} >>>>>>>")
+        log.debug(f"<<<<<<<< New Device {new_device} {
+                  tok} expiry = {expiry} >>>>>>>")
         response.set_cookie("device_id", new_device, expires=expiry)
     else:
         log.debug(f"<<<<<<<< Existing Device {device_id} {tok} >>>>>>>")
@@ -219,7 +220,8 @@ def check_phone():
             return jsonify({"phone": phone, "payment": False})
     elif phone in users:
         if users.get(phone) != device_id:
-            log.info(f"Different Device for phone {phone}: {users.get(phone)} vs {device_id}")
+            log.info(f"Different Device for phone {phone}: {
+                     users.get(phone)} vs {device_id}")
             return jsonify({"phone": phone, "payment": False})
         with SessionLocal() as db_session:
             # Use get_or_create to retrieve the user from the DB
@@ -236,7 +238,7 @@ def check_phone():
         # Start a thread to remove the user from the in-memory dict after expiry
         thread = Thread(target=remove_expired_user, args=[phone])
         thread.start()
-    
+
         with SessionLocal() as db_session:
             user = User(phone)  # create a new User object
             # Save the new user in the DB
@@ -249,4 +251,3 @@ def check_phone():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8001, debug=False)
-

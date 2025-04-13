@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Database credentials and host details
-DB_HOST="172.19.0.2"
+DB_HOST="172.18.0.2"
 DB_USER="admin"
 DB_PASS="Admin1234"
 DB_NAME="wifi"
